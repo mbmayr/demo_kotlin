@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/mbmayr-directbox-com/demo-kotlin:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/mbmayr-directbox-com/demo-kotlin:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: demo-kotlin
+        chartPath: charts/demo-kotlin
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/mbmayr-directbox-com/demo-kotlin"
+          image.tag: "{{.DIGEST_HEX}}"
